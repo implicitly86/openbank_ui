@@ -1,0 +1,8 @@
+logs/
+build/
+dist/
+out/
+node_modules/
+.idea/
+*.iml
+*.log
