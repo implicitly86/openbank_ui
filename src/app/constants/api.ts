@@ -27,6 +27,8 @@ export const Api = {
     ACCOUNT: {
         BASE: (params?: IApiParameters, nextUrl?: string) => Api.BASE(`/account${nextUrl ? nextUrl : ``}`, params),
         ACTION: (params: IApiAction) => `${Api.ACCOUNT.BASE()}/${params.id}`,
-        TRANSFER: () => Api.ACCOUNT.BASE(undefined, `/transfer`)
+        TRANSFER: () => Api.ACCOUNT.BASE(undefined, `/transfer`),
+        ADD_AMOUNT: () => Api.ACCOUNT.BASE(undefined, `/add-amount`),
+        SUBTRACT_AMOUNT: () => Api.ACCOUNT.BASE(undefined, `/subtract-amount`)
     }
 };

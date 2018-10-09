@@ -3,7 +3,7 @@
  */
 
 import * as React from "react";
-import { Button, Icon, Input, message, Table } from "antd";
+import { Button, Icon, Input, message, Select, Table } from "antd";
 
 import './main.css';
 import { Navigation } from "../../elements/navigation/nav";
@@ -20,7 +20,10 @@ import { number } from "prop-types";
 interface MainState {
     accounts: Array<Account>,
     createAccount: boolean,
-    accountNumber: string
+    addAmount: boolean,
+    subtractAmount: boolean,
+    accountNumber: string,
+    amount: number
 }
 
 /**
@@ -38,7 +41,10 @@ export class Main extends React.Component<any, MainState> {
         this.state = {
             accounts: [],
             createAccount: false,
-            accountNumber: ''
+            addAmount: false,
+            subtractAmount: false,
+            accountNumber: '',
+            amount: 0
         };
         this.loadAccounts();
     }
@@ -79,6 +85,38 @@ export class Main extends React.Component<any, MainState> {
     }
 
     /**
+     * Зачисление денежных средств на счет.
+     */
+    private addAmount() {
+        httpClient.post(Api.ACCOUNT.ADD_AMOUNT(), {
+            to: this.state.accountNumber,
+            amount: this.state.amount
+        })
+            .then(() => {
+                message.success('Денежные средства зачислены!');
+                this.loadAccounts();
+                this.setState({accountNumber: '', addAmount: false});
+            })
+            .catch(() => message.error('Произошла ошибка'));
+    }
+
+    /**
+     * Вычетание денежных средств со счета.
+     */
+    private subtractAmount() {
+        httpClient.post(Api.ACCOUNT.SUBTRACT_AMOUNT(), {
+            to: this.state.accountNumber,
+            amount: this.state.amount
+        })
+            .then(() => {
+                message.success('Денежные средства вычтены!');
+                this.loadAccounts();
+                this.setState({accountNumber: '', subtractAmount: false});
+            })
+            .catch(() => message.error('Произошла ошибка'));
+    }
+
+    /**
      * Функция рендеринга компонента.
      */
     render() {
@@ -113,6 +151,13 @@ export class Main extends React.Component<any, MainState> {
                 <Navigation index={Constants.PAGE_PATH.BASE.name}/>
                 <div className="main_content">
                     <Table dataSource={this.state.accounts} columns={columns}/>
+                    {!(this.state.createAccount || this.state.addAmount || this.state.subtractAmount) &&
+                        <Button.Group>
+                            <Button type="primary" icon="plus" onClick={() => this.setState({createAccount: true})}>Добавить счет</Button>
+                            <Button icon="plus" onClick={() => this.setState({addAmount: true})}>Зачислить на счет</Button>
+                            <Button type="danger" icon="minus" onClick={() => this.setState({subtractAmount: true})}>Вычесть со счета</Button>
+                        </Button.Group>
+                    }
                     {this.state.createAccount &&
                         <Input.Group compact>
                             <Input
@@ -121,11 +166,36 @@ export class Main extends React.Component<any, MainState> {
                                 onChange={(e) => this.setState({accountNumber: e.target.value })}
                                 className="account_create"
                             />
-                            <Button type="primary" icon="plus" onClick={() => this.createAccount()}>Добавить</Button>
+                            <Button type="primary" icon="plus" onClick={() => this.createAccount()}>Добавить счет</Button>
                         </Input.Group>
                     }
-                    {!this.state.createAccount &&
-                        <Button type="primary" icon="plus" onClick={() => this.setState({createAccount: true})}>Добавить</Button>
+                    {this.state.addAmount &&
+                        <div>
+                            <Select
+                                placeholder="Выберите счет"
+                                value={this.state.accountNumber}
+                                style={{ width: 300 }}
+                                onChange={(value) => this.setState({accountNumber: value.toString()})}
+                            >
+                                {this.state.accounts.map(it => <Select.Option value={it.number}>{it.number} ({it.balance})</Select.Option>)}
+                            </Select>
+                            <Input placeholder="Сумма" onChange={(e) => this.setState({amount: parseFloat(e.target.value)})}/>
+                            <Button icon="plus" onClick={() => this.addAmount()}>Зачислить на счет</Button>
+                        </div>
+                    }
+                    {this.state.subtractAmount &&
+                        <div>
+                            <Select
+                                placeholder="Выберите счет"
+                                value={this.state.accountNumber}
+                                style={{ width: 300 }}
+                                onChange={(value) => this.setState({accountNumber: value.toString()})}
+                            >
+                                {this.state.accounts.map(it => <Select.Option value={it.number}>{it.number} ({it.balance})</Select.Option>)}
+                            </Select>
+                            <Input placeholder="Сумма" onChange={(e) => this.setState({amount: parseFloat(e.target.value)})}/>
+                            <Button type="danger" icon="minus" onClick={() => this.subtractAmount()}>Вычесть со счета</Button>
+                        </div>
                     }
                 </div>
             </div>

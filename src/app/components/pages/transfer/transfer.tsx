@@ -106,7 +106,11 @@ export class Transfer extends React.Component<any, TransferState> {
                             style={{ width: 300 }}
                             onChange={(value) => this.setState({accountTo: value.toString()})}
                         >
-                            {this.state.accounts.map(it => <Select.Option value={it.number}>{it.number} ({it.balance})</Select.Option>)}
+                            {
+                                this.state.accounts
+                                    .filter(it => it.number !== this.state.accountFrom)
+                                    .map(it => <Select.Option value={it.number}>{it.number} ({it.balance})</Select.Option>)
+                            }
                         </Select>
                         <p className="transfer__p">
                             Или введите номер счета получателя
